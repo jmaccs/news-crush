@@ -11,3 +11,4 @@ exports.getAllTopics = () => {
       return err;
     });
 };
+
