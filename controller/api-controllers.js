@@ -1,4 +1,8 @@
-const { getAllTopics, selectArticle } = require("../model/api-models");
+const {
+  getAllTopics,
+  selectArticle,
+  getAllArticles,
+} = require("../model/api-models");
 const { app } = require("../app");
 const fs = require("fs/promises");
 const { log } = require("console");
@@ -29,4 +33,12 @@ exports.getArticleId = (req, res, next) => {
     .catch((err) => {
       next(err);
     });
+};
+
+exports.getArticles = (req, res, next) => {
+  getAllArticles()
+    .then((articles) => {
+      res.status(200).send({ articles });
+    })
+    .catch((err) => next(err));
 };
