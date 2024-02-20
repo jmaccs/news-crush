@@ -46,7 +46,7 @@ describe("GET /api/articles/:article_id", () => {
       .then((res) => {
         const article = res.body.article;
         expect(typeof article).toBe("object");
-        expect(article).toHaveProperty("article_id");
+        expect(article["article_id"]).toBe(1);
         expect(article).toHaveProperty("title");
         expect(article).toHaveProperty("created_at");
         expect(article).toHaveProperty("votes");
@@ -65,8 +65,49 @@ describe("GET /api/articles/:article_id", () => {
       .get("/api/articles/hello")
       .expect(400)
       .then(({ body }) => {
-        console.log(body);
         expect(body.msg).toBe("Invalid input");
+      });
+  });
+});
+
+describe("GET /api/articles", () => {
+  test("should return an array of article objects featuring article_id and comment_count properties", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then((data) => {
+        const articles = data.body.articles;
+        console.log(articles);
+        expect(typeof articles).toBe("object");
+        articles.forEach((article) => {
+          expect(article).toHaveProperty("title", expect.any(String));
+          expect(article).toHaveProperty("topic", expect.any(String));
+          expect(article).toHaveProperty("author", expect.any(String));
+          expect(article).not.toHaveProperty("body");
+          expect(article).toHaveProperty("created_at", expect.any(String));
+          expect(article).toHaveProperty("article_img_url", expect.any(String));
+          expect(article).toHaveProperty("votes", expect.any(Number));
+          expect(article).toHaveProperty("comment_count", expect.any(String));
+        });
+      });
+  });
+  test("should be ordered by date descending", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then((data) => {
+        const articles = data.body.articles;
+        expect(articles).toBeSortedBy("created_at", { descending: true });
+      });
+  });
+  test("should return accurate comment_count property", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then((data) => {
+        const articles = data.body.articles;
+        const article = articles[6];
+        expect(article["comment_count"]).toBe("11");
       });
   });
 });
