@@ -2,10 +2,10 @@ const {
   getAllTopics,
   selectArticle,
   getAllArticles,
+  selectComments,
 } = require("../model/api-models");
-const { app } = require("../app");
 const fs = require("fs/promises");
-const { log } = require("console");
+const { checkExists } = require("../db/seeds/utils");
 
 exports.getTopics = (req, res, next) => {
   getAllTopics()
@@ -39,6 +39,21 @@ exports.getArticles = (req, res, next) => {
   getAllArticles()
     .then((articles) => {
       res.status(200).send({ articles });
+    })
+    .catch((err) => next(err));
+};
+
+exports.getCommentsById = (req, res, next) => {
+  const { article_id } = req.params;
+  const promises = [
+    selectComments(article_id),
+    checkExists("articles", "article_id", article_id),
+  ];
+  Promise.all(promises)
+    .then((responseArray) => {
+      const comments = responseArray[0];
+      console.log(comments);
+      res.status(200).send({ comments });
     })
     .catch((err) => next(err));
 };

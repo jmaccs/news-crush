@@ -2,7 +2,14 @@ const {
   convertTimestampToDate,
   createRef,
   formatComments,
+  psqlChecker,
 } = require("../db/seeds/utils");
+
+// describe('psqlChecker', () => {
+//   test('should ', () => {
+    
+//   });
+// });
 
 describe("convertTimestampToDate", () => {
   test("returns a new object", () => {
