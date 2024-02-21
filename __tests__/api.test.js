@@ -157,3 +157,61 @@ describe("GET /api/articles/:article_id/comments", () => {
       });
   });
 });
+describe("POST /api/articles/:article_id/comments", () => {
+  test("should respond with 201 and the posted comment", () => {
+    const testComment = {
+      username: "lurker",
+      body: "i have been stuck in vim for 300 days. this is my life now.",
+    };
+    return request(app)
+      .post("/api/articles/3/comments")
+      .send(testComment)
+      .expect(201)
+      .then(({ body }) => {
+        const { comment } = body;
+        expect(comment).toHaveProperty(
+          "body",
+          "i have been stuck in vim for 300 days. this is my life now."
+        );
+      });
+  });
+  test("should respond with a 404 when passed an unregistered username", () => {
+    const testComment = {
+      username: "ghostpizza420",
+      body: "one does not simply exit vim",
+    };
+    return request(app)
+      .post("/api/articles/3/comments")
+      .send(testComment)
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Not Found");
+      });
+  });
+  test("should respond with a 400 if passed a comment with no body", () => {
+    const testComment = {
+      username: "lurker",
+    };
+    return request(app)
+      .post("/api/articles/3/comments")
+      .send(testComment)
+      .expect(400)
+      .then(({ body }) => {
+        console.log(body, 'test');
+        expect(body.msg).toBe("Bad request");
+      });
+  });
+  test("should respond with a 400 if passed invalid article id", () => {
+    const testComment = {
+      username: "lurker",
+    };
+    return request(app)
+      .post("/api/articles/string/comments")
+      .send(testComment)
+      .expect(400)
+      .then(({ body }) => {
+        console.log(body, 'test');
+        expect(body.msg).toBe("Bad request");
+      });
+  });
+});

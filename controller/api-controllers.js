@@ -3,6 +3,7 @@ const {
   selectArticle,
   getAllArticles,
   selectComments,
+  insertComment,
 } = require("../model/api-models");
 const fs = require("fs/promises");
 const { checkExists } = require("../db/seeds/utils");
@@ -52,8 +53,17 @@ exports.getCommentsById = (req, res, next) => {
   Promise.all(promises)
     .then((responseArray) => {
       const comments = responseArray[0];
-      console.log(comments);
       res.status(200).send({ comments });
+    })
+    .catch((err) => next(err));
+};
+
+exports.postComment = (req, res, next) => {
+  const { article_id } = req.params;
+  insertComment(req.body, article_id)
+    .then((comment) => {
+      ;
+      res.status(201).send({ comment });
     })
     .catch((err) => next(err));
 };

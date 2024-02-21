@@ -2,14 +2,9 @@ const db = require("../db/connection");
 const format = require("pg-format");
 
 exports.getAllTopics = () => {
-  return db
-    .query("SELECT * FROM topics;")
-    .then((topics) => {
-      return topics.rows;
-    })
-    .catch((err) => {
-      return err;
-    });
+  return db.query("SELECT * FROM topics;").then((topics) => {
+    return topics.rows;
+  });
 };
 
 exports.selectArticle = (article_id) => {
@@ -45,7 +40,6 @@ GROUP BY
 ORDER BY
   articles.created_at DESC;`;
   return db.query(sql).then((data) => {
-
     return data.rows;
   });
 };
@@ -66,9 +60,16 @@ exports.selectComments = (article_id) => {
   created_at DESC;
     `);
   return db.query(sql, [article_id]).then(({ rows }) => {
-
     return rows;
-  }) .catch((err) => {
-    next(err)
-  });;
+  });
+};
+
+exports.insertComment = (comment, article_id) => {
+  const { username, body } = comment;
+  return db
+    .query(
+      `INSERT INTO comments (author, body, article_id) VALUES ($1, $2, $3) RETURNING *;`,
+      [username, body, article_id]
+    )
+    .then(({ rows }) => rows[0]);
 };
