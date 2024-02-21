@@ -4,6 +4,7 @@ const {
   getApi,
   getArticleId,
   getArticles,
+  getCommentsById,
 } = require("./controller/api-controllers");
 const app = express();
 
@@ -15,10 +16,12 @@ app.get("/api/articles", getArticles);
 
 app.get("/api/articles/:article_id", getArticleId);
 
+app.get("/api/articles/:article_id/comments", getCommentsById);
+
 app.use((err, req, res, next) => {
   if (err.code === "22P02") {
     
-    res.status(400).send({ msg: "Invalid input" });
+    res.status(400).send({ msg: "Bad request" });
   } else next(err);
 });
 

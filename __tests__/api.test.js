@@ -65,7 +65,7 @@ describe("GET /api/articles/:article_id", () => {
       .get("/api/articles/hello")
       .expect(400)
       .then(({ body }) => {
-        expect(body.msg).toBe("Invalid input");
+        expect(body.msg).toBe("Bad request");
       });
   });
 });
@@ -77,7 +77,6 @@ describe("GET /api/articles", () => {
       .expect(200)
       .then((data) => {
         const articles = data.body.articles;
-        console.log(articles);
         expect(typeof articles).toBe("object");
         articles.forEach((article) => {
           expect(article).toHaveProperty("title", expect.any(String));
@@ -108,6 +107,53 @@ describe("GET /api/articles", () => {
         const articles = data.body.articles;
         const article = articles[6];
         expect(article["comment_count"]).toBe("11");
+      });
+  });
+});
+
+describe("GET /api/articles/:article_id/comments", () => {
+  test("should respond with an array of comments objects corresponding to the article id", () => {
+    return request(app)
+      .get("/api/articles/1/comments")
+      .expect(200)
+      .then((data) => {
+        const comments = data.body.comments;
+        expect(typeof comments).toBe("object");
+        comments.forEach((comment) => {
+          expect(comment["article_id"]).toBe(1);
+          expect(comment).toHaveProperty("comment_id", expect.any(Number));
+          expect(comment).toHaveProperty("votes", expect.any(Number));
+          expect(comment).toHaveProperty("created_at", expect.any(String));
+          expect(comment).toHaveProperty("author", expect.any(String));
+          expect(comment).toHaveProperty("body", expect.any(String));
+        });
+      });
+  });
+  test("should be ordered by most recent first", () => {
+    return request(app)
+      .get("/api/articles/1/comments")
+      .expect(200)
+      .then((data) => {
+        const comments = data.body.comments;
+        expect(comments).toBeSortedBy("created_at", { descending: true });
+      });
+  });
+  test("should return an empty array if article has no comments", () => {
+    return request(app)
+      .get("/api/articles/2/comments")
+      .expect(200)
+      .then((data) => {
+        const comments = data.body.comments;
+        expect(comments).toEqual([]);
+      });
+  });
+  test("should return a 404 if article does not exist", () => {
+    return request(app)
+      .get("/api/articles/99/comments")
+      .expect(404)
+      .then((data) => {
+        const actual = data.body.msg;
+        expect(actual).toBe("Resource not found");
       });
   });
 });
