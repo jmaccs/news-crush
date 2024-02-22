@@ -6,6 +6,7 @@ const {
   insertComment,
   updateArticleVotes,
   deleteCommentById,
+  getAllUsers,
 } = require("../model/api-models");
 const fs = require("fs/promises");
 const { checkExists, validator } = require("../utils/utils");
@@ -98,4 +99,12 @@ exports.deleteComments = (req, res, next) => {
     .catch((err) => {
       next(err);
     });
+};
+
+exports.getUsers = (req, res, next) => {
+  getAllUsers()
+    .then((users) => {
+      res.status(200).send({ users });
+    })
+    .catch((err) => next(err));
 };
