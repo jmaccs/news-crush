@@ -14,7 +14,7 @@ exports.selectArticle = (article_id) => {
   return db.query(sql, [article_id]).then(({ rows }) => {
     const article = rows[0];
     if (!article) {
-      return Promise.reject({ status: 404, msg: "Article not found" });
+      return Promise.reject({ status: 404, msg: "Not found" });
     }
     return article;
   });
@@ -70,6 +70,17 @@ exports.insertComment = (comment, article_id) => {
     .query(
       `INSERT INTO comments (author, body, article_id) VALUES ($1, $2, $3) RETURNING *;`,
       [username, body, article_id]
+    )
+    .then(({ rows }) => rows[0]);
+};
+
+exports.updateArticle = (votes, article_id) => {
+  const { inc_votes } = votes;
+
+  return db
+    .query(
+      `UPDATE articles SET votes = votes + $1 WHERE article_id = $2 RETURNING *;`,
+      [inc_votes, article_id]
     )
     .then(({ rows }) => rows[0]);
 };

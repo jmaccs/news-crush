@@ -57,7 +57,7 @@ describe("GET /api/articles/:article_id", () => {
       .get("/api/articles/99")
       .expect(404)
       .then(({ body }) => {
-        expect(body.msg).toBe("Article not found");
+        expect(body.msg).toBe("Not found");
       });
   });
   test("should return a 400 if passed invalid article id", () => {
@@ -153,7 +153,7 @@ describe("GET /api/articles/:article_id/comments", () => {
       .expect(404)
       .then((data) => {
         const actual = data.body.msg;
-        expect(actual).toBe("Resource not found");
+        expect(actual).toBe("Not found");
       });
   });
 });
@@ -169,6 +169,9 @@ describe("POST /api/articles/:article_id/comments", () => {
       .expect(201)
       .then(({ body }) => {
         const { comment } = body;
+        expect(comment).toHaveProperty("author", "lurker");
+        expect(comment).toHaveProperty("votes", expect.any(Number));
+        expect(comment).toHaveProperty("created_at", expect.any(String));
         expect(comment).toHaveProperty(
           "body",
           "i have been stuck in vim for 300 days. this is my life now."
@@ -197,8 +200,20 @@ describe("POST /api/articles/:article_id/comments", () => {
       .send(testComment)
       .expect(400)
       .then(({ body }) => {
-        console.log(body, 'test');
         expect(body.msg).toBe("Bad request");
+      });
+  });
+  test('should return a 404 if passed non-existent article id', () => {
+    const testComment = {
+      username: "lurker",
+      body: "halp"
+    };
+    return request(app)
+      .post("/api/articles/99/comments")
+      .send(testComment)
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Not Found");
       });
   });
   test("should respond with a 400 if passed invalid article id", () => {
@@ -210,8 +225,70 @@ describe("POST /api/articles/:article_id/comments", () => {
       .send(testComment)
       .expect(400)
       .then(({ body }) => {
-        console.log(body, 'test');
         expect(body.msg).toBe("Bad request");
+      });
+  });
+  test("should respond with a 400 if passed additional keys", () => {
+    const testComment = {
+      username: "lurker",
+      body: "...",
+      article_id: 4,
+    };
+    return request(app)
+      .post("/api/articles/string/comments")
+      .send(testComment)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
+      });
+  });
+});
+
+describe("PATCH /api/articles/:article_id", () => {
+  test("should increment article votes by a given number", () => {
+    const patch = { inc_votes: 5 };
+    return request(app)
+      .patch("/api/articles/1")
+      .send(patch)
+      .expect(200)
+      .then(({ body }) => {
+        const { article } = body;
+        expect(article).toHaveProperty("article_id", 1);
+        expect(article).toHaveProperty("votes", 105);
+      });
+  });
+  test("should decrement article votes by a given number", () => {
+    const patch = { inc_votes: -5 };
+    return request(app)
+      .patch("/api/articles/1")
+      .send(patch)
+      .expect(200)
+      .then(({ body }) => {
+        const { article } = body;
+        expect(article).toHaveProperty("article_id", 1);
+        expect(article).toHaveProperty("votes", 95);
+      });
+  });
+  test("should return a 400 if passed invalid article id", () => {
+    const patch = { inc_votes: 5 };
+    return request(app)
+      .patch("/api/articles/string")
+      .send(patch)
+      .expect(400)
+      .then(({ body }) => {
+        const { article } = body;
+        expect(body.msg).toBe("Bad request");
+      });
+  });
+  test("should return a 404 if passed non-existent article id", () => {
+    const patch = { inc_votes: 5 };
+    return request(app)
+      .patch("/api/articles/99")
+      .send(patch)
+      .expect(404)
+      .then(({ body }) => {
+        const { article } = body;
+        expect(body.msg).toBe("Not found");
       });
   });
 });
