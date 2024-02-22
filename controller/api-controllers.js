@@ -4,6 +4,7 @@ const {
   getAllArticles,
   selectComments,
   insertComment,
+  updateArticle,
 } = require("../model/api-models");
 const fs = require("fs/promises");
 const { checkExists } = require("../db/seeds/utils");
@@ -62,8 +63,21 @@ exports.postComment = (req, res, next) => {
   const { article_id } = req.params;
   insertComment(req.body, article_id)
     .then((comment) => {
-      ;
       res.status(201).send({ comment });
+    })
+    .catch((err) => next(err));
+};
+
+exports.patchArticles = (req, res, next) => {
+  const { article_id } = req.params;
+  const promises = [
+    updateArticle(req.body, article_id),
+    checkExists("articles", "article_id", article_id),
+  ];
+  Promise.all(promises)
+    .then((data) => {
+      const article = data[0];
+      res.status(200).send({ article });
     })
     .catch((err) => next(err));
 };
