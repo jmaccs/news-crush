@@ -73,7 +73,6 @@ exports.insertComment = (comment, article_id) => {
       [username, body, article_id]
     )
     .then(({ rows }) => {
- 
       return rows[0];
     });
 };
@@ -86,8 +85,7 @@ exports.updateArticleVotes = (votes, article_id) => {
       [inc_votes, article_id]
     )
     .then(({ rows }) => {
-      console.log(rows[0],'model');
-      return rows[0]; 
+      return rows[0];
     });
 };
 
@@ -98,5 +96,12 @@ exports.deleteCommentById = (comment_id) => {
     if (rows.length === 0) {
       return Promise.reject({ status: 404, msg: "Not found" });
     }
+  });
+};
+
+exports.getAllUsers = () => {
+  return db.query("SELECT * FROM users;").then((data) => {
+    console.log(data, "model");
+    return data.rows;
   });
 };

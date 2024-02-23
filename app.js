@@ -8,6 +8,7 @@ const {
   postComment,
   patchArticles,
   deleteComments,
+  getUsers,
 } = require("./controller/api-controllers");
 const app = express();
 
@@ -29,6 +30,7 @@ app.patch("/api/articles/:article_id", patchArticles);
 
 app.delete("/api/comments/:comment_id", deleteComments);
 
+app.get('/api/users', getUsers)
 app.use((err, req, res, next) => {
   if (err.code === "22P02" || err.code === "23502") {
     res.status(400).send({ msg: "Bad request" });
