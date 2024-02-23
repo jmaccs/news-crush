@@ -188,7 +188,7 @@ describe("POST /api/articles/:article_id/comments", () => {
       .send(testComment)
       .expect(404)
       .then(({ body }) => {
-        expect(body.msg).toBe("Not Found");
+        expect(body.msg).toBe("Not found");
       });
   });
   test("should respond with a 400 if passed a comment with no body", () => {
@@ -203,22 +203,23 @@ describe("POST /api/articles/:article_id/comments", () => {
         expect(body.msg).toBe("Bad request");
       });
   });
-  test('should return a 404 if passed non-existent article id', () => {
-    const testComment = {
+  test("should return a 404 if passed non-existent article id", () => {
+    const testComment2 = {
       username: "lurker",
-      body: "halp"
+      body: "help",
     };
     return request(app)
       .post("/api/articles/99/comments")
-      .send(testComment)
+      .send(testComment2)
       .expect(404)
       .then(({ body }) => {
-        expect(body.msg).toBe("Not Found");
+        expect(body.msg).toBe("Not found");
       });
   });
   test("should respond with a 400 if passed invalid article id", () => {
     const testComment = {
       username: "lurker",
+      body: "hello?",
     };
     return request(app)
       .post("/api/articles/string/comments")
@@ -253,6 +254,7 @@ describe("PATCH /api/articles/:article_id", () => {
       .expect(200)
       .then(({ body }) => {
         const { article } = body;
+        console.log(article);
         expect(article).toHaveProperty("article_id", 1);
         expect(article).toHaveProperty("votes", 105);
       });
@@ -276,7 +278,6 @@ describe("PATCH /api/articles/:article_id", () => {
       .send(patch)
       .expect(400)
       .then(({ body }) => {
-        const { article } = body;
         expect(body.msg).toBe("Bad request");
       });
   });
@@ -287,8 +288,39 @@ describe("PATCH /api/articles/:article_id", () => {
       .send(patch)
       .expect(404)
       .then(({ body }) => {
-        const { article } = body;
         expect(body.msg).toBe("Not found");
+      });
+  });
+  test("should return a 400 if passed non-integer vote value", () => {
+    const patch = { inc_votes: "string" };
+    return request(app)
+      .patch("/api/articles/99")
+      .send(patch)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
+      });
+  });
+});
+describe("DELETE /api/comments/:comment_id", () => {
+  test("should delete the comment corresponding to given comment_id and return 204", () => {
+    return request(app).delete("/api/comments/1").expect(204);
+  });
+  test("should return a 404 on a non existent comment", () => {
+    return request(app)
+      .delete("/api/comments/99")
+      .expect(404)
+      .then(({ body }) => {
+        console.log(body);
+        expect(body.msg).toBe("Not found");
+      });
+  });
+  test("should return a 400 on an invalid id", () => {
+    return request(app)
+      .delete("/api/comments/string")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
       });
   });
 });

@@ -1,5 +1,6 @@
 const db = require("../db/connection");
 const format = require("pg-format");
+const { checkExists, validator } = require("../utils/utils");
 
 exports.getAllTopics = () => {
   return db.query("SELECT * FROM topics;").then((topics) => {
@@ -71,16 +72,31 @@ exports.insertComment = (comment, article_id) => {
       `INSERT INTO comments (author, body, article_id) VALUES ($1, $2, $3) RETURNING *;`,
       [username, body, article_id]
     )
-    .then(({ rows }) => rows[0]);
+    .then(({ rows }) => {
+ 
+      return rows[0];
+    });
 };
 
-exports.updateArticle = (votes, article_id) => {
+exports.updateArticleVotes = (votes, article_id) => {
   const { inc_votes } = votes;
-
   return db
     .query(
       `UPDATE articles SET votes = votes + $1 WHERE article_id = $2 RETURNING *;`,
       [inc_votes, article_id]
     )
-    .then(({ rows }) => rows[0]);
+    .then(({ rows }) => {
+      console.log(rows[0],'model');
+      return rows[0]; 
+    });
+};
+
+exports.deleteCommentById = (comment_id) => {
+  let sql = "DELETE FROM comments WHERE comment_id = $1 RETURNING *;";
+
+  return db.query(sql, [comment_id]).then(({ rows }) => {
+    if (rows.length === 0) {
+      return Promise.reject({ status: 404, msg: "Not found" });
+    }
+  });
 };

@@ -4,10 +4,11 @@ const {
   getAllArticles,
   selectComments,
   insertComment,
-  updateArticle,
+  updateArticleVotes,
+  deleteCommentById,
 } = require("../model/api-models");
 const fs = require("fs/promises");
-const { checkExists } = require("../db/seeds/utils");
+const { checkExists, validator } = require("../utils/utils");
 
 exports.getTopics = (req, res, next) => {
   getAllTopics()
@@ -70,14 +71,31 @@ exports.postComment = (req, res, next) => {
 
 exports.patchArticles = (req, res, next) => {
   const { article_id } = req.params;
-  const promises = [
-    updateArticle(req.body, article_id),
-    checkExists("articles", "article_id", article_id),
-  ];
+
+  const promises = [updateArticleVotes(req.body, article_id)];
   Promise.all(promises)
     .then((data) => {
       const article = data[0];
+      if (article === undefined) {
+        return Promise.reject({ status: 404, msg: "Not found" });
+      }
       res.status(200).send({ article });
     })
     .catch((err) => next(err));
+};
+
+exports.deleteComments = (req, res, next) => {
+  const { comment_id } = req.params;
+  const promises = [
+    checkExists("comments", "comment_id", comment_id),
+    deleteCommentById(comment_id),
+  ];
+  Promise.all(promises)
+    .then(() => {
+      res.status(204).send();
+    })
+
+    .catch((err) => {
+      next(err);
+    });
 };
