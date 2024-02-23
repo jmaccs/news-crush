@@ -291,6 +291,16 @@ describe("PATCH /api/articles/:article_id", () => {
         expect(body.msg).toBe("Not found");
       });
   });
+  test("should return a 400 if passed non-integer vote value", () => {
+    const patch = { inc_votes: "string" };
+    return request(app)
+      .patch("/api/articles/99")
+      .send(patch)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
+      });
+  });
 });
 describe("DELETE /api/comments/:comment_id", () => {
   test("should delete the comment corresponding to given comment_id and return 204", () => {
