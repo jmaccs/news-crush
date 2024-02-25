@@ -14,6 +14,10 @@ const app = express();
 
 app.use(express.json());
 
+app.get('/', (req,res) => {
+  res.send("HOME PAGE !!!")
+})
+
 app.get("/api/topics", getTopics);
 
 app.get("/api", getApi);
