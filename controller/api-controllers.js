@@ -7,9 +7,11 @@ const {
   updateArticleVotes,
   deleteCommentById,
   getAllUsers,
+  sortArticles,
 } = require("../model/api-models");
 const fs = require("fs/promises");
 const { checkExists, validator } = require("../utils/utils");
+const { error } = require("console");
 
 exports.getTopics = (req, res, next) => {
   getAllTopics()
@@ -40,7 +42,8 @@ exports.getArticleId = (req, res, next) => {
 };
 
 exports.getArticles = (req, res, next) => {
-  getAllArticles()
+  const { topic } = req.query;
+  getAllArticles(topic)
     .then((articles) => {
       res.status(200).send({ articles });
     })
@@ -49,17 +52,13 @@ exports.getArticles = (req, res, next) => {
 
 exports.getCommentsById = (req, res, next) => {
   const { article_id } = req.params;
-  const promises = [
-    selectComments(article_id),
-    checkExists("articles", "article_id", article_id),
-  ];
-  Promise.all(promises)
-    .then((responseArray) => {
-      const comments = responseArray[0];
+  selectComments(article_id)
+    .then((comments) => {
       res.status(200).send({ comments });
     })
     .catch((err) => next(err));
 };
+
 
 exports.postComment = (req, res, next) => {
   const { article_id } = req.params;

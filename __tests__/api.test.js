@@ -6,7 +6,9 @@ const seed = require("../db/seeds/seed");
 const endpoints = require("../endpoints.json");
 require("jest-sorted");
 
-beforeEach(() => seed(data));
+beforeEach(() => {
+  return seed(data);
+});
 afterAll(() => db.end());
 
 describe("GET /api/topics", () => {
@@ -77,16 +79,17 @@ describe("GET /api/articles", () => {
       .expect(200)
       .then((data) => {
         const articles = data.body.articles;
+        console.log(articles);
         expect(typeof articles).toBe("object");
         articles.forEach((article) => {
           expect(article).toHaveProperty("title", expect.any(String));
           expect(article).toHaveProperty("topic", expect.any(String));
           expect(article).toHaveProperty("author", expect.any(String));
-          expect(article).not.toHaveProperty("body");
+          expect(article).toHaveProperty("body");
           expect(article).toHaveProperty("created_at", expect.any(String));
           expect(article).toHaveProperty("article_img_url", expect.any(String));
           expect(article).toHaveProperty("votes", expect.any(Number));
-          expect(article).toHaveProperty("comment_count", expect.any(String));
+          expect(article).toHaveProperty("comment_count", expect.any(Number));
         });
       });
   });
@@ -105,8 +108,32 @@ describe("GET /api/articles", () => {
       .expect(200)
       .then((data) => {
         const articles = data.body.articles;
-        const article = articles[6];
-        expect(article["comment_count"]).toBe("11");
+        const article = articles[0];
+        expect(article["comment_count"]).toBe(2);
+      });
+  });
+});
+
+describe("GET queries /api/articles?topic=query", () => {
+  test("should return only requested articles if topic query is included", () => {
+    return request(app)
+      .get("/api/articles?topic=mitch")
+      .expect(200)
+      .then((data) => {
+        const articles = data.body.articles;
+        expect(articles).toBeSortedBy("topic");
+        articles.forEach((article) => {
+          expect(article).toHaveProperty("topic", "mitch");
+        });
+      });
+  });
+  test("should return 404 if topic query doesn't exist", () => {
+    return request(app)
+      .get("/api/articles?topic=michael")
+      .expect(404)
+      .then(({ body }) => {
+        console.log(body);
+        expect(body.msg).toBe("Not found");
       });
   });
 });
@@ -114,13 +141,13 @@ describe("GET /api/articles", () => {
 describe("GET /api/articles/:article_id/comments", () => {
   test("should respond with an array of comments objects corresponding to the article id", () => {
     return request(app)
-      .get("/api/articles/1/comments")
+      .get("/api/articles/5/comments")
       .expect(200)
-      .then((data) => {
-        const comments = data.body.comments;
+      .then(({ body }) => {
+        const comments = body.comments;
         expect(typeof comments).toBe("object");
         comments.forEach((comment) => {
-          expect(comment["article_id"]).toBe(1);
+          expect(comment["article_id"]).toBe(5);
           expect(comment).toHaveProperty("comment_id", expect.any(Number));
           expect(comment).toHaveProperty("votes", expect.any(Number));
           expect(comment).toHaveProperty("created_at", expect.any(String));
@@ -254,7 +281,6 @@ describe("PATCH /api/articles/:article_id", () => {
       .expect(200)
       .then(({ body }) => {
         const { article } = body;
-        console.log(article);
         expect(article).toHaveProperty("article_id", 1);
         expect(article).toHaveProperty("votes", 105);
       });
@@ -311,7 +337,6 @@ describe("DELETE /api/comments/:comment_id", () => {
       .delete("/api/comments/99")
       .expect(404)
       .then(({ body }) => {
-        console.log(body);
         expect(body.msg).toBe("Not found");
       });
   });
