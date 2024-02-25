@@ -54,6 +54,17 @@ describe("GET /api/articles/:article_id", () => {
         expect(article).toHaveProperty("votes");
       });
   });
+  test("should include a comment_count property", () => {
+    return request(app)
+      .get("/api/articles/1")
+      .expect(200)
+      .then((res) => {
+        const article = res.body.article;
+        console.log("test", article);
+        expect(article["article_id"]).toBe(1);
+        expect(article).toHaveProperty("comment_count");
+      });
+  });
   test("should return a 404 on non-existing article id", () => {
     return request(app)
       .get("/api/articles/99")
@@ -79,7 +90,7 @@ describe("GET /api/articles", () => {
       .expect(200)
       .then((data) => {
         const articles = data.body.articles;
-        console.log(articles);
+
         expect(typeof articles).toBe("object");
         articles.forEach((article) => {
           expect(article).toHaveProperty("title", expect.any(String));
@@ -132,7 +143,6 @@ describe("GET queries /api/articles?topic=query", () => {
       .get("/api/articles?topic=michael")
       .expect(404)
       .then(({ body }) => {
-        console.log(body);
         expect(body.msg).toBe("Not found");
       });
   });

@@ -9,9 +9,11 @@ exports.getAllTopics = () => {
 };
 
 exports.selectArticle = (article_id) => {
-  const sql = format(`SELECT * FROM articles
-  WHERE article_id = $1;
-  `);
+  const sql = format(`SELECT a.*, (SELECT COUNT(*) FROM comments WHERE article_id = a.article_id)::int AS comment_count
+  FROM articles a
+  WHERE a.article_id = $1
+  ORDER BY a.created_at ASC;
+ `);
   return db.query(sql, [article_id]).then(({ rows }) => {
     const article = rows[0];
 
