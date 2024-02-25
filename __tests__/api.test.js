@@ -60,7 +60,6 @@ describe("GET /api/articles/:article_id", () => {
       .expect(200)
       .then((res) => {
         const article = res.body.article;
-        console.log("test", article);
         expect(article["article_id"]).toBe(1);
         expect(article).toHaveProperty("comment_count");
       });
