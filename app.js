@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require('cors');
 const {
   getTopics,
   getApi,
@@ -10,9 +11,13 @@ const {
   deleteComments,
   getUsers,
 } = require("./controller/api-controllers");
+
 const app = express();
 
+app.use(cors());
 app.use(express.json());
+
+
 
 app.get('/', (req,res) => {
   res.send("HOME PAGE !!!")
